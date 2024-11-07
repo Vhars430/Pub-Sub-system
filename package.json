@@ -1,0 +1,18 @@
+{
+    "name": "pubsub-system",
+    "version": "1.0.0",
+    "description": "A pubsub system with fault tolerance and messaging",
+    "main": "app.js",
+    "dependencies": {
+        "axios": "^0.27.2",
+        "dotenv": "^16.0.3",
+        "express": "^4.21.1",
+        "kafkajs": "^2.2.4",
+        "uuid": "^8.3.2"
+    },
+    "scripts": {
+        "start": "node app.js"
+    },
+    "author": "Your Name",
+    "license": "ISC"
+}

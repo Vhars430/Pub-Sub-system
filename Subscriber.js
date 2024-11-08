@@ -5,7 +5,7 @@ class Node {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
-      brokers: [kafkaBroker]  // Direct broker configuration
+      brokers: [kafkaBroker], // Change to '127.0.0.1:9092'
     });
     this.consumer = this.kafka.consumer({ groupId: `group-${nodeId}` });
     this.topic = topic;
@@ -23,5 +23,5 @@ class Node {
 }
 
 // Usage example
-const node1 = new Node(1, 'localhost:9092', 'topicA');
+const node1 = new Node(1, '127.0.0.1:9092', 'topicA'); // Update here
 node1.startListening();

@@ -1,5 +1,5 @@
-const axios = require('axios');
-const config = require('./config');
+const axios = require("axios");
+const config = require("./config");
 
 async function notifyFailure(nodeId) {
   try {
@@ -15,7 +15,7 @@ async function monitorFailures(nodeId) {
   // For now, simulate a failure notification after a delay for demonstration.
   setTimeout(async () => {
     await notifyFailure(nodeId);
-  }, 10000);  // Simulate failure after 10 seconds
+  }, 10000); // Simulate failure after 10 seconds
 }
 
 module.exports = { monitorFailures };

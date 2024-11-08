@@ -1,55 +1,60 @@
-const express = require('express');
-const kafka = require('./kafkaClient');
-const failureManager = require('./failureManager');
-const nodeManager = require('./nodeManager');
+const { Kafka } = require('kafkajs');
+const Node = require('./Node');
 const VirtualRing = require('./VirtualRing');
-const config = require('./config'); // Assuming this has config data such as total nodes
+const { producer, consumer, connect } = require('./kafkaClient');
+const failureManager = require('./failureManager');
 
-const app = express();
-const port = 3000;
-const totalNodes = config.totalNodes || 5; // Number of nodes in the virtual ring
+const topic = 'topicName';
+const totalNodes = 5;
+let nodes = [];
 
-// Create nodes in the virtual ring
-const nodes = [];
-for (let i = 1; i <= totalNodes; i++) {
-  const node = new VirtualRing(i, totalNodes);
-  node.setupRing();  // Set up ring connections and partitions
-  nodes.push(node);
+async function initializeNodes() {
+  for (let i = 1; i <= totalNodes; i++) {
+    const node = new Node(i, 'localhost:9092', topic);
+    nodes.push(node);
+    const virtualRing = new VirtualRing(i, totalNodes);
+    virtualRing.setupRing();  // Setup the ring with neighbors
+  }
 }
 
-// Register failure handlers for each node to respond to node failures
-nodes.forEach((node, index) => {
-  node.registerFailureHandler(index, (failedNodeId) => node.handleNodeFailure(failedNodeId));
-});
+async function startKafka() {
+  await connect();
+  await consumer.subscribe({ topic });
+  
+  // // Listening for messages
+  await consumer.run({
+    eachMessage: async ({ topic, partition, message }) => {
+      console.log(`Received message on ${topic}: ${message.value.toString()}`);
+    }
+  });
 
-// Example: Simulate a failure in one of the nodes (e.g., Node 3 fails, triggering reconfiguration)
-nodes[0].handleNodeFailure(3);  // You can remove or replace this line as needed
+  // Simulate node failure
+  simulateNodeFailure();
 
-// Start Kafka Client
-kafka.connect().then(() => {
-  console.log('Kafka client connected');
-}).catch(err => {
-  console.error('Error connecting to Kafka:', err);
-});
+  // Node registration and subscription
+  nodes.forEach(async (node) => {
+    try {
+      console.log(`Node ${node.nodeId} registered with broker.`);
+      await node.startListening();  // Start each node listening to the topic
+    } catch (error) {
+      console.error(`Node ${node.nodeId} registration failed:`, error.message);
+    }
+  });
 
-// Setup Kafka consumer event listeners (valid events)
-const { consumer } = kafka;
-consumer.on(consumer.events.CONNECT, () => console.log('Consumer connected'));
-consumer.on(consumer.events.DISCONNECT, () => console.log('Consumer disconnected'));
-consumer.on(consumer.events.CRASH, (event) => console.error('Consumer crashed', event.payload.error));
+  console.log("App is listening on port 3000");
+}
 
-// Set up routes or application logic
-app.get('/', (req, res) => {
-  res.send('PubSub System Running!');
-});
+// Simulate a node failure
+function simulateNodeFailure() {
+  setTimeout(() => {
+    const failedNodeId = 3;  // Simulate failure of node 3
+    console.log(`Node ${failedNodeId} failed. Updating virtual ring.`);
+    nodes.forEach((node) => {
+      node.virtualRing.handleNodeFailure(failedNodeId);
+    });
+  }, 5000);  // After 5 seconds, simulate a failure of node 3
+}
 
-// Use failure manager for fault tolerance
-failureManager.monitorFailures();  // Ensure this is properly defined in failureManager.js
-
-// Use node manager for node operations (e.g., adding/removing nodes, reconfiguring)
-nodeManager.manageNodes(nodes);  // Make sure this function is defined and properly manages nodes
-
-// Start the express server
-app.listen(port, () => {
-  console.log(`App is listening on port ${port}`);
-});
+// Start the application
+initializeNodes();
+startKafka();

@@ -1,18 +1,21 @@
-const { Kafka } = require('kafkajs');
+const { Kafka } = require("kafkajs");
 
 class Node {
   constructor(nodeId, kafkaBroker) {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
-      brokers: [kafkaBroker]  // Direct broker configuration
+      brokers: [kafkaBroker], // Change to '127.0.0.1:9092'
     });
     this.producer = this.kafka.producer();
   }
 
   async publishMessage(topic, message) {
     await this.producer.connect();
-    console.log(`Node ${this.nodeId} publishing message on topic '${topic}':`, message);
+    console.log(
+      `Node ${this.nodeId} publishing message on topic '${topic}':`,
+      message
+    );
     await this.producer.send({
       topic: topic,
       messages: [{ value: JSON.stringify(message) }],
@@ -22,5 +25,5 @@ class Node {
 }
 
 // Usage example
-const node1 = new Node(1, 'localhost:9092');  // Using localhost as broker
-node1.publishMessage('topicA', { message: 'Hello from Node 1' });
+const node1 = new Node(1, "127.0.0.1:9092"); // Update here
+node1.publishMessage("topicA", { message: "Hello from Node 1" });

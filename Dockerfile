@@ -21,4 +21,4 @@ RUN chmod +x /usr/src/app/wait-for-it.sh
 EXPOSE 3000
 
 # Use wait-for-it.sh to wait for Kafka to be available, then start the app
-CMD ["./wait-for-it.sh", "kafka:9093", "--", "node", "app.js"]
+CMD ["kafka:9093", "--", "node", "app.js"]

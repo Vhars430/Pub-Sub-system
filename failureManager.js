@@ -10,12 +10,24 @@ async function notifyFailure(nodeId) {
   }
 }
 
-async function monitorFailures(nodeId) {
-  // Here you would implement a monitoring process that checks if the node is still active
-  // For now, simulate a failure notification after a delay for demonstration.
-  setTimeout(async () => {
-    await notifyFailure(nodeId);
-  }, 10000); // Simulate failure after 10 seconds
+function checkGossipState(node) {
+  const heartbeats = node.gossip.state;
+  const now = Date.now();
+  const timeoutMs = 15000; // 15 seconds timeout
+
+  for (const [nodeId, data] of heartbeats.entries()) {
+    if (data.value.timestamp < now - timeoutMs) {
+      notifyFailure(nodeId);
+    }
+  }
+}
+
+function monitorFailures() {
+  setInterval(() => {
+    nodes.forEach(node => {
+      checkGossipState(node);
+    });
+  }, 5000);
 }
 
 module.exports = { monitorFailures };

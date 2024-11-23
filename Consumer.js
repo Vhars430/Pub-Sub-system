@@ -14,7 +14,7 @@ if (cluster.isMaster) {
 } else {
   const kafka = new Kafka({
     clientId: 'node',
-    brokers: ['localhost:9092'],
+    brokers: ['kafka:9093'],
   });
 
   const consumer = kafka.consumer({ groupId: 'test-group' });

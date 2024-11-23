@@ -23,5 +23,5 @@ class Node {
 }
 
 // Usage example
-const node1 = new Node(1, '127.0.0.1:9092', 'topicA'); // Update here
+const node1 = new Node(1, 'kafka:9093', 'topicA'); // Update here
 node1.startListening();

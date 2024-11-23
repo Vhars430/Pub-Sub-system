@@ -9,11 +9,25 @@ const totalNodes = 5;
 let nodes = [];
 
 async function initializeNodes() {
-  for (let i = 1; i <= totalNodes; i++) {
-    const node = new Node(i, 'localhost:9092', topic);
-    nodes.push(node);
-    const virtualRing = new VirtualRing(i, totalNodes);
-    virtualRing.setupRing();  // Setup the ring with neighbors
+  try {
+    for (let i = 1; i <= totalNodes; i++) {
+      const node = new Node(i, 'localhost:9092', topic);
+      nodes.push(node);
+      
+      // Initialize node state for gossip
+      node.gossip.updateState('status', {
+        nodeId: i,
+        status: 'active',
+        lastUpdated: Date.now()
+      });
+      
+      // Start listening for each node
+      await node.startListening();
+    }
+    console.log(`${totalNodes} nodes initialized and started`);
+  } catch (error) {
+    console.error('Failed to initialize nodes:', error);
+    process.exit(1);
   }
 }
 
@@ -35,11 +49,16 @@ async function startKafka() {
   nodes.forEach(async (node) => {
     try {
       console.log(`Node ${node.nodeId} registered with broker.`);
-      await node.startListening();  // Start each node listening to the topic
     } catch (error) {
       console.error(`Node ${node.nodeId} registration failed:`, error.message);
     }
   });
+
+  // Start gossip example
+  startGossipExample();
+
+  // Start heartbeats after nodes are initialized
+  startHeartbeats();
 
   console.log("App is listening on port 3000");
 }
@@ -53,6 +72,31 @@ function simulateNodeFailure() {
       node.virtualRing.handleNodeFailure(failedNodeId);
     });
   }, 5000);  // After 5 seconds, simulate a failure of node 3
+}
+
+// Simulate nodes sharing information via gossip
+async function startGossipExample() {
+  setInterval(() => {
+    nodes.forEach(node => {
+      node.updateGossipState('heartbeat', {
+        nodeId: node.nodeId,
+        timestamp: Date.now(),
+        status: 'active'
+      });
+    });
+  }, 5000);
+}
+
+// Add heartbeat monitoring
+function startHeartbeats() {
+  setInterval(() => {
+    nodes.forEach(node => {
+      node.gossip.updateState('heartbeat', {
+        nodeId: node.nodeId,
+        timestamp: Date.now()
+      });
+    });
+  }, 5000); // Send heartbeat every 5 seconds
 }
 
 // Start the application

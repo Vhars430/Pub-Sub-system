@@ -1,4 +1,3 @@
-# Use official Node.js runtime as the base image
 FROM node:18
 
 # Set the working directory inside the container
@@ -11,8 +10,11 @@ RUN npm install
 # Copy the rest of the application files into the container
 COPY . .
 
+# Set Kafka broker as an environment variable
+ENV KAFKA_BROKER=kafka:9093
+
 # Expose the port on which the app will run
 EXPOSE 3000
 
-# Use wait-for-it.sh to wait for Kafka to be available, then start the app
-CMD ["kafka:9093", "--", "node", "app.js"]
+# Start the app using the environment variable for Kafka broker
+CMD ["node", "app.js"]

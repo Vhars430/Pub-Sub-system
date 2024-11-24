@@ -24,7 +24,7 @@ services:
     environment:
       KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
       KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092 # Listeners for internal and external communication
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,PLAINTEXT://localhost:9092 # Advertised listeners for Docker network and external clients
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,PLAINTEXT://18.189.110.78:9092 # Advertised listeners for Docker network and external clients
       KAFKA_LISTENER_NAMES: INSIDE,PLAINTEXT # Both INSIDE and PLAINTEXT listeners
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_INTERNAL: INSIDE
@@ -42,7 +42,7 @@ services:
       - kafka
     environment:
       KAFKA_BROKER: kafka:9093 # Internal Docker network Kafka address
-      KAFKA_EXTERNAL_BROKER: localhost:9092 # External Kafka broker accessible from the host
+      KAFKA_EXTERNAL_BROKER: 18.189.110.78:9092 # External Kafka broker accessible from outside the host
       KAFKAJS_NO_PARTITIONER_WARNING: "1" # Suppress partitioner warning from kafkajs
     networks:
       - pubsub

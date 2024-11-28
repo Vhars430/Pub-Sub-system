@@ -1,17 +1,24 @@
 const { kafkaBroker } = require("./config");
 const Node = require("./Node");
-const VirtualRing = require("./VirtualRing");
-const { producer, consumer, connect } = require("./kafkaClient");
-const failureManager = require("./failureManager");
+const { consumer, connect } = require("./kafkaClient");
+const nodeManager = require("./nodeManager");
 
-const topic = "topicName";
 const totalNodes = 5;
 let nodes = [];
 
 async function initializeNodes() {
   try {
+    // Initialize nodes with topics and groupIds
+    const topics = [
+      { nodeId: 1, topics: ["topic1", "topic2"], groupId: "group1" }, // Shared groupId
+      { nodeId: 2, topics: ["topic2", "topic3"], groupId: "group1" }, // Shared groupId
+      { nodeId: 3, topics: ["topic1", "topic3"], groupId: "group2" },
+      { nodeId: 4, topics: ["topic1"], groupId: "group3" },
+      { nodeId: 5, topics: ["topic2", "topic3"], groupId: "group4" },
+    ];
+
     for (let i = 1; i <= totalNodes; i++) {
-      const node = new Node(i, kafkaBroker, topic);
+      const node = new Node(i, kafkaBroker, "initTopic");
       nodes.push(node);
 
       // Initialize node state for gossip
@@ -21,10 +28,21 @@ async function initializeNodes() {
         lastUpdated: Date.now(),
       });
 
+      // Assign topics and groupId to node
+      const nodeConfig = topics.find((t) => t.nodeId === i);
+      node.topics = nodeConfig.topics;
+      node.groupId = nodeConfig.groupId; // Set the groupId for the node
+
       // Start listening for each node
       await node.startListening();
     }
-    console.log(`${totalNodes} nodes initialized and started`);
+
+    // Manage nodes with updated topic and groupId information
+    await nodeManager.manageNodes(topics);
+
+    console.log(
+      `Nodes Initialized! ${totalNodes} nodes initialized and started`
+    );
   } catch (error) {
     console.error("Failed to initialize nodes:", error);
     process.exit(1);
@@ -33,26 +51,33 @@ async function initializeNodes() {
 
 async function startKafka() {
   await connect();
-  await consumer.subscribe({ topic });
 
-  // // Listening for messages
-  await consumer.run({
-    eachMessage: async ({ topic, partition, message }) => {
-      console.log(`Received message on ${topic}: ${message.value.toString()}`);
-    },
-  });
+  for (const node of nodes) {
+    if (node.topics && node.topics.length > 0) {
+      // Subscribe to all topics assigned to this node
+      for (const nodeTopic of node.topics) {
+        await consumer.subscribe({
+          topic: nodeTopic,
+          groupId: node.groupId, // Use the group's ID for shared consumption
+        });
+
+        await consumer.run({
+          eachMessage: async ({ topic, partition, message }) => {
+            console.log(
+              `Node ${node.nodeId} (Group: ${
+                node.groupId
+              }) received message on ${topic}: ${message.value.toString()}`
+            );
+          },
+        });
+      }
+    } else {
+      console.error(`Node ${node.nodeId} has no assigned topics.`);
+    }
+  }
 
   // Simulate node failure
   simulateNodeFailure();
-
-  // Node registration and subscription
-  nodes.forEach(async (node) => {
-    try {
-      console.log(`Node ${node.nodeId} registered with broker.`);
-    } catch (error) {
-      console.error(`Node ${node.nodeId} registration failed:`, error.message);
-    }
-  });
 
   // Start gossip example
   startGossipExample();

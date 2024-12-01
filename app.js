@@ -18,7 +18,7 @@ async function initializeNodes() {
     ];
 
     for (let i = 1; i <= totalNodes; i++) {
-      const node = new Node(i, kafkaBroker, "initTopic");
+      const node = new Node(i, kafkaBroker, "initTopic", groupId = "pubsub-system-group", nodes);
       nodes.push(node);
 
       // Initialize node state for gossip
@@ -43,6 +43,7 @@ async function initializeNodes() {
     console.log(
       `Nodes Initialized! ${totalNodes} nodes initialized and started`
     );
+    startElection();
   } catch (error) {
     console.error("Failed to initialize nodes:", error);
     process.exit(1);
@@ -118,6 +119,19 @@ async function startGossipExample() {
       });
     });
   }, 5000);
+}
+function startElection() {
+  console.log("Starting leader election...");
+  
+  // Trigger election from any active node except the leader (we'll assume the first node is the leader initially)
+  const activeNodes = nodes.filter(node => node.isAlive);
+   //&& node.nodeId !== 1); // Exclude node 1, the initial leader
+  if (activeNodes.length > 0) {
+    const electionStarter = activeNodes[0]; // You can implement logic to pick any active node
+    electionStarter.leaderElection.startElection(); // Trigger election from this node
+  } else {
+    console.log("No active nodes available to start election.");
+  }
 }
 
 // Add heartbeat monitoring

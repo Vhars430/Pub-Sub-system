@@ -18,11 +18,19 @@ class Node {
     this.topic = topic;
     this.virtualRing = new VirtualRing(nodeId, 5); // Example of 5 nodes
     this.gossip = new GossipProtocol(this);
+    this.neighbors = [];
+    this.virtualRing.setupRing(); // Set up the initial ring
+    this.updateNeighbors(); // Set neighbors initially
+  }
+
+  // Add a method to update neighbors from the virtual ring
+  updateNeighbors() {
+    this.neighbors = this.virtualRing.getNeighbors();
   }
 
   async publishMessage(message) {
     await this.producer.connect();
-    console.log(`Node ${this.nodeId} publishing message:`, message);
+    // console.log(`Node ${this.nodeId} publishing message:`, message);
     await this.producer.send({
       topic: this.topic,
       messages: [{ value: JSON.stringify(message) }],
@@ -50,9 +58,6 @@ class Node {
             parsedMessage.targetId === this.nodeId
           ) {
             this.handleGossipMessage(parsedMessage.payload);
-            console.log(
-              `Node ${this.nodeId} received gossip from Node ${parsedMessage.payload.sourceId}`
-            );
           }
         },
       });

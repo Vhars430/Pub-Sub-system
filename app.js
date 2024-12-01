@@ -10,8 +10,8 @@ async function initializeNodes() {
   try {
     // Initialize nodes with topics and groupIds
     const topics = [
-      { nodeId: 1, topics: ["topic1", "topic2"], groupId: "group1" }, // Shared groupId
-      { nodeId: 2, topics: ["topic2", "topic3"], groupId: "group1" }, // Shared groupId
+      { nodeId: 1, topics: ["topic1", "topic2"], groupId: "group1" },
+      { nodeId: 2, topics: ["topic2", "topic3"], groupId: "group1" },
       { nodeId: 3, topics: ["topic1", "topic3"], groupId: "group2" },
       { nodeId: 4, topics: ["topic1"], groupId: "group3" },
       { nodeId: 5, topics: ["topic2", "topic3"], groupId: "group4" },
@@ -31,7 +31,7 @@ async function initializeNodes() {
       // Assign topics and groupId to node
       const nodeConfig = topics.find((t) => t.nodeId === i);
       node.topics = nodeConfig.topics;
-      node.groupId = nodeConfig.groupId; // Set the groupId for the node
+      node.groupId = nodeConfig.groupId;
 
       // Start listening for each node
       await node.startListening();
@@ -50,53 +50,61 @@ async function initializeNodes() {
 }
 
 async function startKafka() {
-  await connect();
+  try {
+    await connect();
 
-  for (const node of nodes) {
-    if (node.topics && node.topics.length > 0) {
-      // Subscribe to all topics assigned to this node
-      for (const nodeTopic of node.topics) {
-        await consumer.subscribe({
-          topic: nodeTopic,
-          groupId: node.groupId, // Use the group's ID for shared consumption
-        });
-
-        await consumer.run({
-          eachMessage: async ({ topic, partition, message }) => {
-            console.log(
-              `Node ${node.nodeId} (Group: ${
-                node.groupId
-              }) received message on ${topic}: ${message.value.toString()}`
-            );
-          },
-        });
+    // Subscribe to all topics for each node before starting the consumer
+    for (const node of nodes) {
+      if (node.topics && node.topics.length > 0) {
+        for (const nodeTopic of node.topics) {
+          await consumer.subscribe({
+            topic: nodeTopic,
+            groupId: node.groupId, // Use the group's ID for shared consumption
+          });
+        }
+      } else {
+        console.error(`Node ${node.nodeId} has no assigned topics.`);
       }
-    } else {
-      console.error(`Node ${node.nodeId} has no assigned topics.`);
     }
+
+    // After subscribing to all topics, start consuming messages
+    await consumer.run({
+      eachMessage: async ({ topic, partition, message }) => {
+        console.log(
+          `Node received message on ${topic}: ${message.value.toString()}`
+        );
+      },
+    });
+
+    console.log("App is listening on port 3000");
+  } catch (error) {
+    console.error("Failed to start Kafka:", error);
+    process.exit(1);
   }
-
-  // Simulate node failure
-  simulateNodeFailure();
-
-  // Start gossip example
-  startGossipExample();
-
-  // Start heartbeats after nodes are initialized
-  startHeartbeats();
-
-  console.log("App is listening on port 3000");
 }
 
 // Simulate a node failure
-function simulateNodeFailure() {
+function simulateNodeFailure(failedNodeId) {
   setTimeout(() => {
-    const failedNodeId = 3; // Simulate failure of node 3
     console.log(`Node ${failedNodeId} failed. Updating virtual ring.`);
+
+    // Update the virtual ring for each node and log the neighbors
     nodes.forEach((node) => {
+      console.log(
+        `Before failure: Node ${node.nodeId} neighbors:`,
+        node.neighbors
+      );
       node.virtualRing.handleNodeFailure(failedNodeId);
+
+      // Update neighbors after the failure
+      node.updateNeighbors();
+
+      console.log(
+        `Node ${node.nodeId} updated virtual ring, new neighbors:`,
+        node.neighbors
+      );
     });
-  }, 5000); // After 5 seconds, simulate a failure of node 3
+  }, 3000); // After 3 seconds, simulate a failure of node 3
 }
 
 // Simulate nodes sharing information via gossip
@@ -125,5 +133,28 @@ function startHeartbeats() {
 }
 
 // Start the application
-initializeNodes();
-startKafka();
+async function startApp() {
+  try {
+    // First initialize the nodes
+    await initializeNodes();
+    // Then start Kafka
+    await startKafka();
+
+    // Simulate node 3 failure
+    console.log("Simulating node 3 failure...");
+    simulateNodeFailure(3);
+
+    // Start gossip example
+    console.log("Starting gossip example...");
+    await startGossipExample();
+
+    // Start heartbeats after nodes are initialized
+    console.log("Starting heartbeats...");
+    startHeartbeats();
+  } catch (error) {
+    console.error("Error starting application:", error);
+    process.exit(1);
+  }
+}
+
+startApp();

@@ -1,27 +1,36 @@
-const { Kafka } = require('kafkajs');
-const GossipProtocol = require('./GossipProtocol');
+const { Kafka } = require("kafkajs");
+const GossipProtocol = require("./GossipProtocol");
+const VirtualRing = require("./VirtualRing");
 
 class Node {
-  constructor(nodeId, kafkaBroker, topic) {
+  constructor(nodeId, kafkaBroker, topic, groupId = "pubsub-system-group") {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
       brokers: [kafkaBroker],
       retry: {
         initialRetryTime: 100,
-        retries: 5
-      }
+        retries: 5,
+      },
     });
     this.producer = this.kafka.producer();
-    this.consumer = this.kafka.consumer({ groupId: `group-${nodeId}` });
+    this.consumer = this.kafka.consumer({ groupId });
     this.topic = topic;
-    this.virtualRing = new (require('./VirtualRing'))(nodeId, 5); // Example of 5 nodes
+    this.virtualRing = new VirtualRing(nodeId, 5); // Example of 5 nodes
     this.gossip = new GossipProtocol(this);
+    this.neighbors = [];
+    this.virtualRing.setupRing(); // Set up the initial ring
+    this.updateNeighbors(); // Set neighbors initially
+  }
+
+  // Add a method to update neighbors from the virtual ring
+  updateNeighbors() {
+    this.neighbors = this.virtualRing.getNeighbors();
   }
 
   async publishMessage(message) {
     await this.producer.connect();
-    console.log(`Node ${this.nodeId} publishing message:`, message);
+    // console.log(`Node ${this.nodeId} publishing message:`, message);
     await this.producer.send({
       topic: this.topic,
       messages: [{ value: JSON.stringify(message) }],
@@ -33,20 +42,22 @@ class Node {
     try {
       // Create topic first
       await createTopicIfNotExists(this, this.topic);
-      
+
       // Connect consumer
       await this.consumer.connect();
-      
+
       // Subscribe to topic
       await this.consumer.subscribe({ topic: this.topic });
-      
+
       // Start consumer
       await this.consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
           const parsedMessage = JSON.parse(message.value.toString());
-          if (parsedMessage.type === 'GOSSIP' && parsedMessage.targetId === this.nodeId) {
+          if (
+            parsedMessage.type === "GOSSIP" &&
+            parsedMessage.targetId === this.nodeId
+          ) {
             this.handleGossipMessage(parsedMessage.payload);
-            console.log(`Node ${this.nodeId} received gossip from Node ${parsedMessage.payload.sourceId}`);
           }
         },
       });
@@ -75,16 +86,18 @@ class Node {
 async function createTopicIfNotExists(node, topic) {
   const admin = node.kafka.admin();
   await admin.connect();
-  
+
   try {
     const topics = await admin.listTopics();
     if (!topics.includes(topic)) {
       await admin.createTopics({
-        topics: [{
-          topic,
-          numPartitions: 1,
-          replicationFactor: 1
-        }]
+        topics: [
+          {
+            topic,
+            numPartitions: 1,
+            replicationFactor: 1,
+          },
+        ],
       });
       console.log(`Topic ${topic} created successfully`);
     }

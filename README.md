@@ -92,8 +92,14 @@ This will start the application using Node.js (npm).
 3. **Stop and Remove All Containers (Optional - for a complete restart):**
 
    ```bash
+   docker volume prune -f
+   docker network prune -f
+   Then,
    docker stop $(docker ps -q)
    docker rm $(docker ps -aq)
+   Then,
+   docker stack rm pubsub-stack
+   docker stack deploy -c docker-compose.yml pubsub-stack
    ```
 
 4. **Redeploy the Stack:**

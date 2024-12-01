@@ -1,11 +1,12 @@
 const { Kafka } = require("kafkajs");
+const { kafkaBroker } = require("./config");
 
 class Node {
   constructor(nodeId, kafkaBroker) {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
-      brokers: [kafkaBroker], // Change to '127.0.0.1:9092'
+      brokers: [kafkaBroker],
     });
     this.producer = this.kafka.producer();
   }
@@ -25,5 +26,5 @@ class Node {
 }
 
 // Usage example
-const node1 = new Node(1, "kafka:9093"); // Update here
+const node1 = new Node(1, "kafka:9093");
 node1.publishMessage("topicA", { message: "Hello from Node 1" });

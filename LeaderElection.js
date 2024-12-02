@@ -116,15 +116,4 @@ class LeaderElection {
 }
 
 module.exports = LeaderElection;
- //   if (nextNode && nextNode.isAlive) {
-    //     console.log(`Node ${this.node.nodeId}: Next node ${nextNode.nodeId} is alive, starting election.`);
-    //     const nextElection = new LeaderElection(nextNode);
-    //     nextNode.setNodes(this.node.nodes);
-    //     await nextElection.startElection();
-    //   } 
-    //   if(!nextNode.isAlive){
-
-    //     await this.listenForOKResponses();
-    //     console.log(`Node ${this.node.nodeId}: Next node ${nextNode.nodeId} is not alive, election skipped.`);
-
-    //   }
+ 

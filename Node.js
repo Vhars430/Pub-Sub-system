@@ -18,7 +18,7 @@ class Node {
     });
     this.producer = this.kafka.producer();
     this.consumer = this.kafka.consumer({ groupId });
-    this.topic = "initTopic";
+    this.topic = topic;
     this.virtualRing = new VirtualRing(nodeId, 5); // Example of 5 nodes
     this.gossip = new GossipProtocol(this);
     this.neighbors = [];

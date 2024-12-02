@@ -11,7 +11,8 @@
         "uuid": "^8.3.2"
     },
     "scripts": {
-        "start": "node app.js"
+        "start": "node app.js",
+        "test": "mocha test/**/*.test.js"
     },
     "author": "Your Name",
     "license": "ISC"

@@ -88,6 +88,10 @@ async function startKafka() {
 function simulateNodeFailure(failedNodeId) {
   setTimeout(() => {
     console.log(`Node ${failedNodeId} failed. Updating virtual ring.`);
+    const failedNode = nodes.find(node => node.nodeId === failedNodeId);
+    if (failedNode) {
+      failedNode.crash(); // Mark node as crashed
+        }
 
     // Update the virtual ring for each node and log the neighbors
     nodes.forEach((node) => {
@@ -105,7 +109,15 @@ function simulateNodeFailure(failedNodeId) {
         node.neighbors
       );
     });
-  }, 3000); // After 3 seconds, simulate a failure of node 3
+  }, 3000); 
+  // After 3 seconds, simulate a failure of node 3
+  setTimeout(() => {
+    console.log(`Reviving Node ${failedNodeId}`);
+    const revivedNode = nodes.find(node => node.nodeId === failedNodeId);
+    if (revivedNode) {
+        revivedNode.revive(failedNodeId); // Mark node as revived
+    }
+}, 8000); 
 }
 
 // Simulate nodes sharing information via gossip
@@ -120,6 +132,7 @@ async function startGossipExample() {
     });
   }, 5000);
 }
+
 function startElection() {
   console.log("Starting leader election...");
   
@@ -155,13 +168,14 @@ async function startApp() {
     await startKafka();
 
     // Simulate node 3 failure
-    console.log("Simulating node 3 failure...");
-    simulateNodeFailure(3);
+    console.log("Simulating node 5 failure...");
+    simulateNodeFailure(5);
 
     // Start gossip example
     console.log("Starting gossip example...");
     await startGossipExample();
 
+    
     // Start heartbeats after nodes are initialized
     console.log("Starting heartbeats...");
     startHeartbeats();

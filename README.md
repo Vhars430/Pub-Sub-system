@@ -50,6 +50,10 @@ This will start the application using Node.js (npm).
   ```bash
   docker service logs -f pubsub-stack_kafka
   ```
+  OR
+  ```bash
+  docker service logs -f pubsub-stack_pubsub
+  ```
   This command displays the logs for the Kafka service in real-time.
 
 ### Restarting the Docker Swarm

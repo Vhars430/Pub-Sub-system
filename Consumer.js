@@ -15,7 +15,7 @@ if (cluster.isMaster) {
 } else {
   const kafka = new Kafka({
     clientId: "node",
-    brokers: [kafkaBroker.split(",")],
+    brokers: kafkaBroker.split(","),
   });
 
   const consumer = kafka.consumer({ groupId: "test-group" });

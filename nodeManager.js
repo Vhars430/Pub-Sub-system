@@ -5,7 +5,7 @@ class NodeManager {
   constructor() {
     this.kafka = new Kafka({
       clientId: "node-manager",
-      brokers: [config.kafkaBroker],
+      brokers: kafkaBroker.split(","),
     });
   }
 

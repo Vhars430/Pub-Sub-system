@@ -54,7 +54,12 @@ This will start the application using Node.js (npm).
   ```bash
   docker service logs -f pubsub-stack_pubsub
   ```
-  This command displays the logs for the Kafka service in real-time.
+
+```bash
+  docker service logs -f pubsub-stack_pubsub | grep -v '"level":"ERROR"'
+```
+
+This command displays the logs for the Kafka service in real-time.
 
 ### Restarting the Docker Swarm
 
@@ -149,6 +154,8 @@ The application logs should display various messages as it starts up. Look for m
 2. **Push Images (to a registry):**
    ```bash
    docker-compose push
+   docker build -t kbenellisjsu/pubsub-system:latest .
+   docker push kbenellisjsu/pubsub-system:latest
    ```
    This pushes the built images to a Docker registry (requires configuration).
 

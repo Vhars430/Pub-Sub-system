@@ -72,7 +72,7 @@ services:
       - kafka2
       - kafka3
     environment:
-      KAFKA_BROKER: kafka1:9092,kafka2:9094,kafka3:9095
+      KAFKA_BROKER: kafka1:9092,kafka2:9092,kafka3:9092
       KAFKA_EXTERNAL_BROKER: 18.189.110.78:9092,18.189.110.78:9094,18.189.110.78:9095
       KAFKAJS_NO_PARTITIONER_WARNING: "1"
     networks:

@@ -18,7 +18,12 @@ async function initializeNodes() {
     ];
 
     for (let i = 1; i <= totalNodes; i++) {
-      const node = new Node(i, kafkaBroker, "initTopic", groupId = "pubsub-system-group", nodes);
+      const node = new Node(
+        i,
+        "initTopic",
+        (groupId = "pubsub-system-group"),
+        nodes
+      );
       nodes.push(node);
 
       // Initialize node state for gossip
@@ -88,10 +93,10 @@ async function startKafka() {
 function simulateNodeFailure(failedNodeId) {
   setTimeout(() => {
     console.log(`Node ${failedNodeId} failed. Updating virtual ring.`);
-    const failedNode = nodes.find(node => node.nodeId === failedNodeId);
+    const failedNode = nodes.find((node) => node.nodeId === failedNodeId);
     if (failedNode) {
       failedNode.crash(); // Mark node as crashed
-        }
+    }
 
     // Update the virtual ring for each node and log the neighbors
     nodes.forEach((node) => {
@@ -109,15 +114,15 @@ function simulateNodeFailure(failedNodeId) {
         node.neighbors
       );
     });
-  }, 3000); 
+  }, 3000);
   // After 3 seconds, simulate a failure of node 3
   setTimeout(() => {
     console.log(`Reviving Node ${failedNodeId}`);
-    const revivedNode = nodes.find(node => node.nodeId === failedNodeId);
+    const revivedNode = nodes.find((node) => node.nodeId === failedNodeId);
     if (revivedNode) {
-        revivedNode.revive(failedNodeId); // Mark node as revived
+      revivedNode.revive(failedNodeId); // Mark node as revived
     }
-}, 8000); 
+  }, 8000);
 }
 
 // Simulate nodes sharing information via gossip
@@ -135,10 +140,10 @@ async function startGossipExample() {
 
 function startElection() {
   console.log("Starting leader election...");
-  
+
   // Trigger election from any active node except the leader (we'll assume the first node is the leader initially)
-  const activeNodes = nodes.filter(node => node.isAlive);
-   //&& node.nodeId !== 1); // Exclude node 1, the initial leader
+  const activeNodes = nodes.filter((node) => node.isAlive);
+  //&& node.nodeId !== 1); // Exclude node 1, the initial leader
   if (activeNodes.length > 0) {
     const electionStarter = activeNodes[0]; // You can implement logic to pick any active node
     electionStarter.leaderElection.startElection(); // Trigger election from this node
@@ -175,7 +180,6 @@ async function startApp() {
     console.log("Starting gossip example...");
     await startGossipExample();
 
-    
     // Start heartbeats after nodes are initialized
     console.log("Starting heartbeats...");
     startHeartbeats();

@@ -5,13 +5,7 @@ const VirtualRing = require("./VirtualRing");
 const { kafkaBroker } = require("./config");
 
 class Node {
-  constructor(
-    nodeId,
-    kafkaBroker,
-    topic,
-    groupId = "pubsub-system-group",
-    nodes
-  ) {
+  constructor(nodeId, topic, groupId = "pubsub-system-group", nodes) {
     this.nodeId = nodeId;
 
     this.kafka = new Kafka({

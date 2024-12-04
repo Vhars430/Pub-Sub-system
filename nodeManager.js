@@ -1,5 +1,6 @@
 const { Kafka } = require("kafkajs");
 const config = require("./config");
+const { kafkaBroker } = require("./config");
 
 class NodeManager {
   constructor() {

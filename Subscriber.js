@@ -1,5 +1,6 @@
 const { Kafka } = require("kafkajs");
 const { kafkaBroker } = require("./config");
+
 class Node {
   constructor(nodeId, topic) {
     this.nodeId = nodeId;

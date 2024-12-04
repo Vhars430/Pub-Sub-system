@@ -6,7 +6,7 @@ class Node {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
-      brokers: [kafkaBroker],
+      brokers: kafkaBroker.split(","),
     });
     this.producer = this.kafka.producer();
   }

@@ -14,22 +14,57 @@ services:
     networks:
       - pubsub
 
-  kafka:
+  kafka1:
     image: bitnami/kafka:latest
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092" # External port for Kafka to be accessible outside Docker (host)
-      - "9093:9093" # Internal Kafka port, used inside Docker network
+      - "9092:9092"
     environment:
+      KAFKA_BROKER_ID: 1
       KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
-      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092 # Listeners for internal and external communication
-      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:9093,PLAINTEXT://18.189.110.78:9092 # Advertised listeners for Docker network and external clients
-      KAFKA_LISTENER_NAMES: INSIDE,PLAINTEXT # Both INSIDE and PLAINTEXT listeners
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka1:9093,PLAINTEXT://18.189.110.78:9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_LISTENER_INTERNAL: INSIDE
       KAFKA_LISTENER_INTERNAL_PORT: 9093
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,PLAINTEXT:PLAINTEXT # Define security protocols for both listeners
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,PLAINTEXT:PLAINTEXT
+    networks:
+      - pubsub
+
+  kafka2:
+    image: bitnami/kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9094:9092"
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka2:9093,PLAINTEXT://18.189.110.78:9094
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_INTERNAL: INSIDE
+      KAFKA_LISTENER_INTERNAL_PORT: 9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,PLAINTEXT:PLAINTEXT
+    networks:
+      - pubsub
+
+  kafka3:
+    image: bitnami/kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "9095:9092"
+    environment:
+      KAFKA_BROKER_ID: 3
+      KAFKA_LISTENER_SECURITY_PROTOCOL: PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:9093,PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka3:9093,PLAINTEXT://18.189.110.78:9095
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_INTERNAL: INSIDE
+      KAFKA_LISTENER_INTERNAL_PORT: 9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,PLAINTEXT:PLAINTEXT
     networks:
       - pubsub
 
@@ -37,13 +72,15 @@ services:
     image: kbenellisjsu/pubsub-system:latest
     build: .
     ports:
-      - "3000:3000" # Expose your app on port 3000
+      - "3000:3000"
     depends_on:
-      - kafka
+      - kafka1
+      - kafka2
+      - kafka3
     environment:
-      KAFKA_BROKER: kafka:9093 # Internal Docker network Kafka address
-      KAFKA_EXTERNAL_BROKER: 18.189.110.78:9092 # External Kafka broker accessible from outside the host
-      KAFKAJS_NO_PARTITIONER_WARNING: "1" # Suppress partitioner warning from kafkajs
+      KAFKA_BROKER: kafka1:9093,kafka2:9093,kafka3:9093 # Internal Docker network Kafka address
+      KAFKA_EXTERNAL_BROKER: 18.189.110.78:9092
+      KAFKAJS_NO_PARTITIONER_WARNING: "1"
     networks:
       - pubsub
 

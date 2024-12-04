@@ -167,3 +167,31 @@ docker service update --image kbenellisjsu/pubsub-system:latest pubsub-stack_pub
 ```
 
 This example updates the image for the `pubsub-stack_pubsub` service with the latest version from the `kbenellisjsu/pubsub-system` repository on Docker Hub.
+
+## Scaling Service Replicas
+
+To scale the number of replicas for your services, use the `docker service scale` command. This allows you to increase or decrease the number of instances running for each service.
+
+### Scaling Kafka Service
+
+```bash
+docker service scale pubsub-stack_kafka=3
+```
+
+This command scales the Kafka service to 3 replicas.
+
+### Scaling Pub-Sub Service
+
+```bash
+docker service scale pubsub-stack_pubsub=3
+```
+
+This command scales the Pub-Sub service to 3 replicas.
+
+### Scaling Zookeeper Service
+
+```bash
+docker service scale pubsub-stack_zookeeper=3
+```
+
+This command scales the Zookeeper service to 3 replicas.

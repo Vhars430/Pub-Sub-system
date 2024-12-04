@@ -5,7 +5,7 @@ const { kafkaBroker } = require("./config");
 // Create a new Kafka client
 const kafka = new Kafka({
   clientId: "pubsub-system",
-  brokers: [kafkaBroker],
+  brokers: kafkaBroker.split(","),
 });
 
 // Create producer and consumer

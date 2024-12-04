@@ -5,7 +5,7 @@ class Node {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
-      brokers: [kafkaBroker],
+      brokers: kafkaBroker.split(","),
     });
     this.consumer = this.kafka.consumer({ groupId: "pubsub-system-group" });
     this.topic = topic;

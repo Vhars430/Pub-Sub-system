@@ -18,8 +18,8 @@ class Node {
       clientId: `node-${nodeId}`,
       brokers: kafkaBroker.split(","),
       retry: {
-        initialRetryTime: 100,
-        retries: 5,
+        initialRetryTime: 10000,
+        retries: 3,
       },
     });
     this.producer = this.kafka.producer();

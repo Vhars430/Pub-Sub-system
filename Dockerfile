@@ -11,8 +11,8 @@ RUN npm install
 COPY . .
 
 # Set Kafka brokers as an environment variable (internal and external brokers)
-ENV KAFKA_BROKERS=kafka1:9093,kafka2:9094,kafka3:9095
-ENV KAFKA_EXTERNAL_BROKERS=18.189.110.78:9092,18.189.110.78:9094,18.189.110.78:9095
+ENV KAFKA_BROKERS="kafka1:9092,kafka2:9092,kafka3:9092"
+ENV KAFKA_EXTERNAL_BROKERS="18.189.110.78:9092,18.189.110.78:9094,18.189.110.78:9095"
 
 # Expose the port on which the app will run
 EXPOSE 3000

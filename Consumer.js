@@ -1,6 +1,7 @@
-const cluster = require('cluster');
-const numCPUs = require('os').cpus().length;
-const { Kafka } = require('kafkajs');
+const cluster = require("cluster");
+const numCPUs = require("os").cpus().length;
+const { Kafka } = require("kafkajs");
+const { kafkaBroker } = require("./config");
 
 if (cluster.isMaster) {
   // Fork workers for each CPU core
@@ -8,20 +9,20 @@ if (cluster.isMaster) {
     cluster.fork();
   }
 
-  cluster.on('exit', (worker, code, signal) => {
+  cluster.on("exit", (worker, code, signal) => {
     console.log(`Worker ${worker.process.pid} died`);
   });
 } else {
   const kafka = new Kafka({
-    clientId: 'node',
-    brokers: ['kafka:9093'],
+    clientId: "node",
+    brokers: [kafkaBroker],
   });
 
-  const consumer = kafka.consumer({ groupId: 'test-group' });
+  const consumer = kafka.consumer({ groupId: "test-group" });
 
   (async () => {
     await consumer.connect();
-    await consumer.subscribe({ topic: 'topicA', fromBeginning: true });
+    await consumer.subscribe({ topic: "topicA", fromBeginning: true });
 
     await consumer.run({
       eachMessage: async ({ topic, partition, message }) => {

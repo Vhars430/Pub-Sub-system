@@ -233,7 +233,7 @@ async function createTopicIfNotExists(node, topic) {
         topics: [
           {
             topic,
-            numPartitions: 3,
+            numPartitions: 1,
             replicationFactor: 3,
           },
         ],

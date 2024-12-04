@@ -2,7 +2,7 @@ const { Kafka } = require("kafkajs");
 const { kafkaBroker } = require("./config");
 
 class Node {
-  constructor(nodeId, kafkaBroker) {
+  constructor(nodeId) {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
@@ -26,5 +26,5 @@ class Node {
 }
 
 // Usage example
-const node1 = new Node(1, "kafka:9093");
+const node1 = new Node(1);
 node1.publishMessage("topicA", { message: "Hello from Node 1" });

@@ -1,3 +1,3 @@
 module.exports = {
-  kafkaBroker: process.env.KAFKA_BROKER || "localhost:9092",
+  kafkaBroker: process.env.KAFKA_BROKERS || "localhost:9092",
 };

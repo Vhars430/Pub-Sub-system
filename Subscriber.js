@@ -1,11 +1,12 @@
 const { Kafka } = require("kafkajs");
+const { kafkaBroker } = require("./config");
 
 class Node {
-  constructor(nodeId, kafkaBroker, topic) {
+  constructor(nodeId, topic) {
     this.nodeId = nodeId;
     this.kafka = new Kafka({
       clientId: `node-${nodeId}`,
-      brokers: [kafkaBroker],
+      brokers: kafkaBroker.split(","),
     });
     this.consumer = this.kafka.consumer({ groupId: "pubsub-system-group" });
     this.topic = topic;
@@ -27,5 +28,5 @@ class Node {
 }
 
 // Usage example
-const node1 = new Node(1, "kafka:9093", "topicA"); // Update here
+const node1 = new Node(1, "topicA"); // Update here
 node1.startListening();

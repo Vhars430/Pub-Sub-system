@@ -4,7 +4,6 @@ const { Kafka } = require("kafkajs");
 const { kafkaBroker } = require("./config");
 
 if (cluster.isMaster) {
-  // Fork workers for each CPU core
   for (let i = 0; i < numCPUs; i++) {
     cluster.fork();
   }

@@ -19,26 +19,24 @@ class Node {
     this.producer = this.kafka.producer();
     this.consumer = this.kafka.consumer({ groupId });
     this.topic = topic;
-    this.virtualRing = new VirtualRing(nodeId, 5); // Example of 5 nodes
+    this.virtualRing = new VirtualRing(nodeId, 5);
     this.gossip = new GossipProtocol(this);
     this.neighbors = [];
     this.virtualRing.setupRing();
     this.updateNeighbors();
-    this.leader = null; // Current leader (null if none)
-    this.isAlive = true; // Flag to simulate node crash (alive or crashed)
-    this.inElection = false; // Flag to check if the node is participating in the election
-    this.leaderElection = new LeaderElection(this); // LeaderElection instance
+    this.leader = null; 
+    this.isAlive = true; 
+    this.inElection = false;
+    this.leaderElection = new LeaderElection(this);
     this.nodes = nodes;
     
   }
 
   setNodes(nodesArray) {
-    this.nodes = nodesArray; // Set the list of all nodes to this.nodes
+    this.nodes = nodesArray;
   }
 
-  // Get active nodes
   getActiveNodes() {
-    // Ensure this.nodes is defined before calling filter
     if (!this.nodes) {
       console.log('Error: Nodes array is not defined.');
       return [];
@@ -51,22 +49,20 @@ class Node {
   }
 
   getNextNode() {
-    // Ensure that nodes are properly initialized
     if (!this.nodes || this.nodes.length === 0) {
       console.error(`Node ${this.nodeId}: No nodes initialized.`);
-      return null; // or handle as needed
+      return null;
     }
   
-    // Get the next node ID in the list (in circular fashion)
-    const nextNodeIndex = (this.nodeId % this.nodes.length); // Wrap around if necessary
+    const nextNodeIndex = (this.nodeId % this.nodes.length);
     const nextNode = this.nodes[nextNodeIndex];
   
     if (!nextNode || nextNode.nodeId === this.nodeId) {
       console.error(`Node ${this.nodeId}: Next node is not valid or is the same as current node.`);
-      return null; // or handle as needed
+      return null;
     }
   
-    return nextNode; // Return the next node in the list
+    return nextNode;
   }
   
   async publishMessage(message) {
@@ -75,7 +71,6 @@ class Node {
     }
     try {
       await this.producer.connect();
-      //console.log(`Node ${this.nodeId} publishing message:`, message);
 
 
       await this.producer.send({
@@ -84,22 +79,16 @@ class Node {
       });
     } catch (error) {
       console.error(`Node ${this.nodeId}: Error publishing message to topic ${this.topic}:`, error);
-      throw error;  // Rethrow the error after logging it
+      throw error;
     } finally {
-      // Disconnect the producer after sending the message
       await this.producer.disconnect();
     }
   }
   
-  
-  
-  
   async startListening() {
     try {
-      // Create topic first
       await createTopicIfNotExists(this, this.topic);
       
-      // Connect consumer
       await this.consumer.connect();
       
       // Subscribe to topic
@@ -133,29 +122,24 @@ class Node {
     }
   }
 
-  // Add method to update gossip state
   updateGossipState(key, value) {
     this.gossip.updateState(key, value);
   }
 
   handleNodeCrash() {
-    //console.log(`Node ${this.nodeId}: Detected node crash.`);
 
-    // Only detect and act if this node is alive and not in the election process
     if (this.isAlive && !this.inElection) {
-        // Check if the node was the leader
         if (!this.leader || !this.leader.isAlive) {
             console.log(`Node ${this.nodeId}: Leader is down or no leader set, triggering election.`);
             this.inElection = true;
-            this.leaderElection.startElection();  // Trigger election if no leader or leader is dead
+            this.leaderElection.startElection();
         }
     }
 
-    // Handle the case where a node crashes while being the leader
     if (this.isAlive && this.leader && this.nodeId !== this.leader.nodeId && !this.inElection) {
         console.log(`Node ${this.nodeId}: Leader crashed, initiating election.`);
         this.inElection = true;
-        this.leaderElection.startElection();  // Trigger election if leader crashed
+        this.leaderElection.startElection();
     }
   }
   crash() {
@@ -183,16 +167,13 @@ checkLeaderStatus(failedNodeId) {
       this.leaderElection.startElection();
   }
 
-  // If the revived node's nodeId is greater than the leader's nodeId, trigger an election
   if (this.leader && !this.leader.isAlive && !this.inElection) {
       console.log(`Node ${this.nodeId}: Leader is down, triggering election.`);
       this.inElection = true;
       this.leaderElection.startElection();
   }
 
-  // If there is a leader, and it is still alive, check if this node needs to trigger a new election
   if (this.leader && this.leader.nodeId !== null && this.isAlive && !this.inElection) {
-      // If the revived node's nodeId is greater than the leader's nodeId, trigger an election
       if (this.nodeId > this.leader.nodeId) {
           console.log(`Node ${this.nodeId}: Node's id is greater than the leader's, triggering election.`);
           this.inElection = true;
@@ -200,19 +181,13 @@ checkLeaderStatus(failedNodeId) {
       }
   }
 }
-
   
-
-  
-  // Set the leader for this node
 setLeader(leaderNode) {
     this.leader = leaderNode;
-    this.inElection = false; // Reset election flag after setting a new leader
+    this.inElection = false;
     console.log(`Node ${this.nodeId} has set Node ${leaderNode.nodeId} as the leader.`);
   }
 }
-
-
 
 async function createTopicIfNotExists(node, topic) {
   const admin = node.kafka.admin();

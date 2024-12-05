@@ -48,7 +48,7 @@ async function initializeNodes() {
     console.log(
       `Nodes Initialized! ${totalNodes} nodes initialized and started`
     );
-    startElection();
+    
   } catch (error) {
     console.error("Failed to initialize nodes:", error);
     process.exit(1);
@@ -179,6 +179,8 @@ async function startApp() {
     // Start gossip example
     console.log("Starting gossip example...");
     await startGossipExample();
+
+    startElection();
 
     // Start heartbeats after nodes are initialized
     console.log("Starting heartbeats...");

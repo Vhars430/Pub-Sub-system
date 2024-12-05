@@ -19,9 +19,14 @@ class VirtualRing {
 
   // Handle a node failure and propagate it to the neighbors
   handleNodeFailure(failedNodeId) {
+    if (failedNodeId === this.nodeId) {
+      //console.log(`Node ${this.nodeId}: Skipping self failure detection.`);
+      return;
+    }
     console.log(
       `Node ${this.nodeId} detected failure of Node ${failedNodeId}. Reconfiguring ring...`
     );
+    
     if (this.failedNodes.has(failedNodeId)) {
       console.log(
         `Node ${this.nodeId}: Already processed failure of Node ${failedNodeId}`

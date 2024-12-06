@@ -17,12 +17,12 @@ This project implements a Kafka-based publish-subscribe system with Zookeeper co
 
 1. **Stop Existing Containers (if any):**
 
-   ```bash
+   ```
    docker-compose down
    ```
 
 2. **Build and Start Containers:**
-   ```bash
+   ```
    docker-compose up --build
    ```
    This command builds the Docker images for your application and starts the Kafka and Zookeeper containers.
@@ -31,7 +31,7 @@ This project implements a Kafka-based publish-subscribe system with Zookeeper co
 
 After Kafka and Zookeeper are running, navigate to your project directory and run:
 
-```bash
+```
 npm start
 ```
 
@@ -47,19 +47,23 @@ This will start the application using Node.js (npm).
 ### Investigating Logs
 
 - **Kafka Logs:**
-  ```bash
-  docker service logs -f pubsub-stack_kafka
   ```
-  OR
-  ```bash
+  docker service logs -f pubsub-stack_kafka1
+  docker service logs -f pubsub-stack_kafka2
+  docker service logs -f pubsub-stack_kafka3
+  ```
+- **pubsub-stack Logs:**
+
+  ```
   docker service logs -f pubsub-stack_pubsub
   ```
 
-```bash
-  docker service logs -f pubsub-stack_pubsub | grep -v '"level":"ERROR"'
-```
+- **Zookeeper Logs:**
+  ```
+  docker service logs -f pubsub-stack_kafka3
+  ```
 
-This command displays the logs for the Kafka service in real-time.
+The -f flag signals to displays the logs for the Kafka service in real-time.
 
 ### Restarting the Docker Swarm
 
@@ -67,7 +71,7 @@ This command displays the logs for the Kafka service in real-time.
 
 1. **Clean Up Volumes and Networks:**
 
-   ```bash
+   ```
    docker volume prune -f
    docker network prune -f
    ```
@@ -75,7 +79,7 @@ This command displays the logs for the Kafka service in real-time.
    This removes unused Docker volumes and networks.
 
 2. **Remove and Redeploy the Stack:**
-   ```bash
+   ```
    docker stack rm pubsub-stack
    docker stack deploy -c docker-compose.yml pubsub-stack
    ```
@@ -85,34 +89,35 @@ This command displays the logs for the Kafka service in real-time.
 
 1. **Clean Up Resources Again:**
 
-   ```bash
+   ```
    docker volume prune -f
    docker network prune -f
    ```
 
 2. **Identify and Remove Lingering Network IDs (Optional):**
 
-   ```bash
-   docker network ls  # List all networks
-   # Identify and remove any lingering network IDs related to the stack
+   ```
+   docker network ls
    docker network rm <network_id>
    ```
 
 3. **Stop and Remove All Containers (Optional - for a complete restart):**
 
-   ```bash
+   ```
    docker volume prune -f
    docker network prune -f
+
    Then,
    docker stop $(docker ps -q)
    docker rm $(docker ps -aq)
+
    Then,
    docker stack rm pubsub-stack
    docker stack deploy -c docker-compose.yml pubsub-stack
    ```
 
 4. **Redeploy the Stack:**
-   ```bash
+   ```
    docker stack rm pubsub-stack
    docker stack deploy -c docker-compose.yml pubsub-stack
    ```
@@ -125,14 +130,14 @@ The application logs should display various messages as it starts up. Look for m
 
 - **Check Service Status:**
 
-  ```bash
+  ```
   docker stack services pubsub-stack
   ```
 
   This command displays the status of all services within the `pubsub-stack` stack.
 
 - **View Specific Service Logs:**
-  ```bash
+  ```
   docker service logs <service-name>
   ```
   Replace `<service-name>` with the actual service name (e.g., `pubsub-stack_kafka`). This displays the logs for the specified service.
@@ -145,14 +150,14 @@ The application logs should display various messages as it starts up. Look for m
 
 1. **Build Images:**
 
-   ```bash
+   ```
    docker-compose build
    ```
 
    This builds Docker images for each service defined in your `docker-compose.yml` file.
 
 2. **Push Images (to a registry):**
-   ```bash
+   ```
    docker-compose push
    docker build -t kbenellisjsu/pubsub-system:latest .
    docker push kbenellisjsu/pubsub-system:latest
@@ -161,9 +166,9 @@ The application logs should display various messages as it starts up. Look for m
 
 ### Deploying the Stack
 
-**Once you have built the images (or are using pre-built ones), deploy the stack using Docker Compose:**
+**Once you have built the images, deploy the stack using Docker Compose:**
 
-```bash
+```
 docker stack deploy -c docker-compose.yml pubsub-stack
 ```
 
@@ -173,27 +178,29 @@ This command deploys the stack based on the configuration in your `docker-compos
 
 To update the image for a specific service within the stack, use the following command:
 
-```bash
+```
 docker service update --image kbenellisjsu/pubsub-system:latest pubsub-stack_pubsub
 ```
 
-This example updates the image for the `pubsub-stack_pubsub` service with the latest version from the `kbenellisjsu/pubsub-system` repository on Docker Hub.
+This updates the image for the `pubsub-stack_pubsub` service with the latest version from the `kbenellisjsu/pubsub-system` repository on Docker Hub.
 
 ## Scaling Service Replicas
 
-To scale the number of replicas for your services, use the `docker service scale` command. This allows you to increase or decrease the number of instances running for each service.
+To scale the number of replicas for your services, use the `docker service scale` command.
 
 ### Scaling Kafka Service
 
-```bash
-docker service scale pubsub-stack_kafka=3
+```
+docker service scale pubsub-stack_kafka1=3
+docker service scale pubsub-stack_kafka2=3
+docker service scale pubsub-stack_kafka3=3
 ```
 
 This command scales the Kafka service to 3 replicas.
 
 ### Scaling Pub-Sub Service
 
-```bash
+```
 docker service scale pubsub-stack_pubsub=3
 ```
 
@@ -201,7 +208,7 @@ This command scales the Pub-Sub service to 3 replicas.
 
 ### Scaling Zookeeper Service
 
-```bash
+```
 docker service scale pubsub-stack_zookeeper=3
 ```
 

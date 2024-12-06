@@ -213,3 +213,20 @@ docker service scale pubsub-stack_zookeeper=3
 ```
 
 This command scales the Zookeeper service to 3 replicas.
+
+# Running Tests
+
+To run the tests for this project, you need to have the necessary development dependencies installed. You can install them using the following command:
+
+```
+npm install --save-dev mocha chai sinon
+
+```
+
+Once the dependencies are installed, you can run the tests using:
+
+```bash
+npm test
+```
+
+This command will execute all test files located in the `test` directory, using Mocha as the test runner.

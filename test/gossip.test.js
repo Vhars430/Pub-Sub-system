@@ -7,7 +7,6 @@ describe("Gossip Protocol Tests", () => {
   let node1, node2, gossip1, gossip2;
 
   beforeEach(() => {
-    // Mock Kafka configuration
     const mockKafkaConfig = {
       kafkaBroker: "localhost:9092",
       topic: "test-topic",
@@ -38,11 +37,9 @@ describe("Gossip Protocol Tests", () => {
 
   // Happy Path Test
   it("should successfully propagate state updates between nodes", async () => {
-    // Update state in first node
     const testValue = "test123";
     gossip1.updateState("testKey", testValue);
 
-    // Simulate gossip message receipt
     await node2.handleGossipMessage({
       sourceId: "node1",
       state: Object.fromEntries(gossip1.state),
@@ -53,7 +50,6 @@ describe("Gossip Protocol Tests", () => {
     expect(node2State.value).to.equal(testValue);
   });
 
-  // Version Control Test
   it("should only update state if received version is newer", () => {
     const oldValue = "oldValue";
     const newValue = "newValue";
@@ -75,7 +71,6 @@ describe("Gossip Protocol Tests", () => {
       .stub(node1, "publishMessage")
       .throws(new Error("Network Error"));
 
-    // Should not throw error
     await gossip1.sendGossip("node2");
 
     expect(publishStub.calledOnce).to.be.true;
@@ -83,10 +78,8 @@ describe("Gossip Protocol Tests", () => {
 
   //  State Validation Test
   it("should maintain state consistency when updating", () => {
-    // Update state
     gossip1.updateState("testKey", "testValue");
 
-    // Verify state structure
     const state = gossip1.state.get("testKey");
 
     expect(state).to.have.property("value", "testValue");

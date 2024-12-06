@@ -13,7 +13,7 @@ async function notifyFailure(nodeId) {
 function checkGossipState(node) {
   const heartbeats = node.gossip.state;
   const now = Date.now();
-  const timeoutMs = 15000; // 15 seconds timeout
+  const timeoutMs = 15000;
 
   for (const [nodeId, data] of heartbeats.entries()) {
     if (data.value.timestamp < now - timeoutMs) {

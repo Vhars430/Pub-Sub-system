@@ -27,6 +27,5 @@ class Node {
   }
 }
 
-// Usage example
-const node1 = new Node(1, "topicA"); // Update here
+const node1 = new Node(1, "topicA");
 node1.startListening();

@@ -25,6 +25,5 @@ class Node {
   }
 }
 
-// Usage example
 const node1 = new Node(1);
 node1.publishMessage("topicA", { message: "Hello from Node 1" });

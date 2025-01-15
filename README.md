@@ -6,7 +6,7 @@ This project implements a Kafka-based publish-subscribe system with Zookeeper co
 
 ## Prerequisites
 
-- **Docker:** Ensure you have Docker installed on your system. Download and install it from the official website: [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
+- **Docker:** Ensure you have Docker installed on your system. Download and install it from the official website given here: [https://www.docker.com/get-started/](https://www.docker.com/get-started/)
 - **Familiarity with Docker Tools:** Basic understanding of `docker-compose`, `docker stack`, and `npm` is recommended.
 
 ---
